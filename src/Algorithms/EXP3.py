@@ -1,12 +1,13 @@
 import numpy as np
 
 class EXP3_policy:
-    def __init__(self, model, gamma=0.1):
+    def __init__(self, model, rng, gamma=0.1):
         self.model = model
         self.gamma = gamma
+        self.rng = rng
         self.weights = {}
 
-    def _initialize_new_arms(self, active_arms):
+    def init_new_arms(self, active_arms):
         for arm in active_arms:
             if arm not in self.weights:
                 self.weights[arm] = 1.0
@@ -16,7 +17,7 @@ class EXP3_policy:
         if not active_arms:
             raise ValueError("No active arms available to select.")
             
-        self._initialize_new_arms(active_arms)
+        self.init_new_arms(active_arms)
         
         active_weights = np.array([self.weights[arm] for arm in active_arms])
         sum_active_weights = np.sum(active_weights)
@@ -26,7 +27,7 @@ class EXP3_policy:
         probabilities = (1.0 - self.gamma) * (active_weights / sum_active_weights) + (self.gamma / K_active)
         
         probabilities /= np.sum(probabilities)
-        chosen_arm = np.random.choice(active_arms, p=probabilities)
+        chosen_arm = self.rng.random.choice(active_arms, p=probabilities)
         chosen_prob = probabilities[active_arms.index(chosen_arm)]
         return chosen_arm, chosen_prob
 
@@ -38,11 +39,11 @@ class EXP3_policy:
         self.weights[chosen_arm] *= np.exp((self.gamma * estimated_reward) / K_active)
         
         if self.weights[chosen_arm] > 1e100:
-            self._normalize_weights()
+            self.norm_weights()
             
         return str(chosen_arm), reward
 
-    def _normalize_weights(self):
+    def norm_weights(self):
         max_w = max(self.weights.values())
         for arm in self.weights:
             self.weights[arm] /= max_w

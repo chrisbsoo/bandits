@@ -32,23 +32,13 @@ class UCB_policy:
 
         return max(ucb_values, key=ucb_values.get)
 
-    def step(self):
+    def step(self, time):
         chosen_arm = self.select_arm()
         
-        reward = self.model.play(chosen_arm)
+        reward = self.model.play(chosen_arm, time)
         
         self.t += 1
         self.total_counts[chosen_arm] += 1
         self.total_rewards[chosen_arm] += reward
         
         return chosen_arm, reward
-
-    def run(self, iterations):
-        cumm_rew = [0]
-        arms = []
-        for i in range(iterations):
-            arm, reward = self.step()
-            arms.append(arm)
-            cumm_rew.append(round(cumm_rew[i] + reward, 2))
-
-        return arms, cumm_rew

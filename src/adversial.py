@@ -10,7 +10,7 @@ class adversial_model:
         
         self.active_dat = self.data.copy()
         
-    def add(self, *rewards):
+    def add_arm(self, *rewards):
         for reward in rewards:
             idx = str(len(self.data))
             self.data[idx] = [int(x) for x in reward.split(" ")]
@@ -24,7 +24,7 @@ class adversial_model:
         ilist = idxs.split(" ")
         self.active_dat = {x : self.data[x] for x in ilist}
 
-    def remove(self, idx):
+    def remove_arm(self, idx):
         # Removes an arm given index
         del self.data[str(idx)]
 
