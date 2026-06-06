@@ -27,7 +27,7 @@ class EXP3_policy:
         probabilities = (1.0 - self.gamma) * (active_weights / sum_active_weights) + (self.gamma / K_active)
         
         probabilities /= np.sum(probabilities)
-        chosen_arm = self.rng.random.choice(active_arms, p=probabilities)
+        chosen_arm = self.rng.choice(active_arms, p=probabilities)
         chosen_prob = probabilities[active_arms.index(chosen_arm)]
         return chosen_arm, chosen_prob
 
@@ -47,3 +47,11 @@ class EXP3_policy:
         max_w = max(self.weights.values())
         for arm in self.weights:
             self.weights[arm] /= max_w
+    
+    def update(self, chosen_arm, reward, chosen_prob):
+        K_active = len(self.model.active_dat.keys())
+
+        estimated_reward = reward / chosen_prob
+        
+        growth_factor = np.exp((self.gamma * estimated_reward) / K_active)
+        self.weights[chosen_arm] *= growth_factor

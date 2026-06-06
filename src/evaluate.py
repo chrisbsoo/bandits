@@ -1,7 +1,18 @@
+import numpy as np
 
-def eval(model, algo, iteration=100000, *hp):
-    alg = algo(model, *hp)
+def eval_adv(model, algo):
 
-    for i in range(iteration):
-        pass
+    regrets = []
+    for t in range(model.horizon):
+        step, reward = algo.step(t)
+        rewards = []
+        for i in list(model.data):
+            rewards.append(model.data[i][t])
+        
+        reg = (max(rewards) - reward)
+        regrets.append(reg)
+    
+    cum_reg = np.cumsum(regrets).tolist()
+    return cum_reg
+
     
