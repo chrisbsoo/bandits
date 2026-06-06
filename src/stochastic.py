@@ -1,6 +1,9 @@
 import numpy as np
 
-# INPUT: dist, rng, T, "k1p1 k2p1 k3p1 ... ", "k1p2 k2p2 k3p2 ..."
+# REMEMBER FOR MODELS: MUST HAVES:
+# 1. TIME HORIZON
+# 2. NUMBER OF ARMS, INDEX OF ARMS (0 ... K-1)
+# 3. STEP FUNCTION, RETURNS REWARD
 
 class stochastic_model:
     def __init__(self, dist, rng, horizon, *params):

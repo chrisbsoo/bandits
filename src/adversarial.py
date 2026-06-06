@@ -1,10 +1,11 @@
-
 import numpy as np
 
-# INPUT: "k1t1 k1t2 k1t3 ... ", "k2t1 k2t2 k2t3 ..."
-# 0-Based Indexxing
+# REMEMBER FOR MODELS: MUST HAVES:
+# 1. TIME HORIZON
+# 2. NUMBER OF ARMS, INDEX OF ARMS (0 ... K-1)
+# 3. STEP FUNCTION, RETURNS REWARD
 
-class adversial_model:
+class adversarial_model:
     def __init__(self, *rewards):
         self.data = {}
 
@@ -12,7 +13,7 @@ class adversial_model:
             self.data[str(i)] = [int(x) for x in reward.split(" ")]
         
         self.horizon = len(self.data["0"])
-        
+        self.arm_size = len(self.data)
         self.active_dat = self.data.copy()
         
     def add_arm(self, *rewards):
