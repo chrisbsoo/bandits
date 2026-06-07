@@ -1,4 +1,57 @@
-hello
-$whats up$
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocodex}
+
+\begin{document}
+
+\section{Model Formulation}
+
+$$1, 2, \ldots, K \text{arms}, \; 1, 2, \ldots, T \text{Time Horizon}$$
+
+\section{Supplementary Material for Code}
+
+\begin{itemize}
+    \item \texttt{src/adversarial.py <function object> gen\_adv\_seq} : Refer to A1
+    \item \texttt{src/hybrid.py <class object> gauss\_hybrid\_model} : Refer to A2
+    \item \texttt{src/algorithms/EXP3.py <class object> EXP3\_policy} : Refer to A3
+\end{itemize}
 
 
+\section{A1}
+
+\begin{algorithm}
+    \caption{Generate Adversarial Sequence}
+    \begin{algorithmic}[1]
+        \Require Horizon $T$, Autocorrelation Parameter $c$, Observation Ratio $\rho$
+        \Ensure Sequence $X_1, X_2, \ldots , X_T$ where $X_i \in \{0, 1\}, \;\frac{1}{T}\sum_{t=1}^T X_t = \rho$
+        \State $X_1 \sim Bernoulli(\rho)$
+        \For{$t = 2, \dots, T$}
+            \State $\hat{p}_t \gets \frac{1}{t-1} \sum_{s=1}^{t-1} X_s$ \Comment{Running empirical mean}
+            \State $e_t \gets \hat{p}_t - \rho$ \Comment{Error from target}
+
+            \If{$X_{t-1} = 1$}
+                \State $p_{\text{stay}} \gets \frac{1+c}{2} - e_t$
+            \Else
+                \State $p_{\text{stay}} \gets \frac{1+c}{2} + e_t$
+            \EndIf
+
+            \State $p_{\text{stay}} \gets \text{clip}(p_{\text{stay}},\ 0,\ 1)$
+            \State $\text{stay} \sim \text{Bernoulli}(p_{\text{stay}})$
+
+            \If{$\text{stay}$}
+                \State $X_t \gets X_{t-1}$
+            \Else
+                \State $X_t \gets 1 - X_{t-1}$
+            \EndIf
+        \EndFor
+
+        \State \Return $X_1, \dots, X_T$
+
+    \end{algorithmic}
+\end{algorithm}
+
+
+
+\end{document}
