@@ -1,8 +1,9 @@
 import numpy as np
 
 class gauss_hybrid_model:
-    def __init__(self, rng=None, K=None, T=None, s=None, n=None, c=None, l0=None, l1=None):
+    def __init__(self, rng=None, rngz=None, K=None, T=None, s=None, n=None, c=None, l0=None, l1=None):
         # parameters
+        self.rngz = rngz
         self.rng = rng
         self.K = K
         self.T = T
@@ -58,4 +59,48 @@ class gauss_hybrid_model:
         return A
     
     def gen_Z(self):
-        NotImplemented
+        Z = np.zeros((self.K, self.T), dtype=int)
+        
+        for i in range(self.K):
+            ni = self.n[i]
+            ci = self.c[i] * self.T
+                
+            # choose how many clusters (M) we can safely allow
+            max_clusters = ni - ci
+
+            # M clusters need at least M-1 zeros to separate them: ni + M - 1 <= T
+            max_clusters = min(max_clusters, self.T - ni + 1)
+                
+            # uniformly choose num of clusters between 1 and max_clusters
+            M = self.rngz.integers(1, max_clusters + 1)
+            
+            # distribute ni ones into M clusters (each size >= 1)
+            dividers = np.sort(self.rngz.choice(ni - 1, size=M - 1, replace=False)) + 1
+            dividers = np.concatenate(([0], dividers, [ni]))
+            cluster_sizes = np.diff(dividers) # List of sizes summing to ni
+            
+            # distribute the remaining "free zeros" across the M+1 landing zones
+            total_free_zeros = self.T - ni - (M - 1)
+            
+            # split free zeros into M+1 bins (can be 0 zeros in a bin)
+            zero_dividers = np.sort(self.rngz.choice(total_free_zeros + M, size=M, replace=False))
+            zero_dividers = np.concatenate(([0], zero_dividers, [total_free_zeros + M]))
+            zero_bins = np.diff(zero_dividers) - 1 # How many zeros go in each gap
+            
+            # construct the row sequentially using our generated building blocks
+            row = []
+            for j in range(M):
+                # add the zeros preceding this cluster
+                row.extend([0] * zero_bins[j])
+                # add the cluster of ones
+                row.extend([1] * cluster_sizes[j])
+                # add the mandatory separating zero (except after the very last cluster)
+                if j < M - 1:
+                    row.extend([0])
+                    
+            # add the final trailing zeros
+            row.extend([0] * zero_bins[-1])
+            
+            Z[i, :] = np.array(row)
+            
+        return Z

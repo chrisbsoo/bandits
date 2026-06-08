@@ -17,7 +17,7 @@ $$\sigma_1, \ldots ,\sigma_K, \lambda_1^{(0)}, \ldots, \lambda_K^{(0)}, \lambda_
 $$1, 2, \ldots, K\; \text{arms}, \; 1, 2, \ldots, T\; \text{Time Horizon}$$
 $$Y^{(\sigma_i)}_{i, t} \sim N(Z_{i, t}, \sigma_i^2)\; \text{Reward of arm $k$ at time $t$}$$
 $$Z_{i, t} = \mathbb{E}(Y_{i, t}^{(\sigma)}) \in \mathcal{Z}$$
-$$\mathcal{Z} = \left\{ Z \in \{0, 1\}^{K \times T} : \sum_{t=1}^T Z_{i, t} = n_i, \; \sum_{t=1}^{T-1}Z_{i, t} Z_{i, t+1} \geq c_i \right\}$$
+$$\mathcal{Z} = \left\{ Z \in \{0, 1\}^{K \times T} : \sum_{t=1}^T Z_{i, t} = n_i, \; \frac{1}{T}\sum_{t=1}^{T-1}Z_{i, t} Z_{i, t+1} \geq c_i \right\}$$
 $$a_t \subseteq \{1, \ldots, K\} \text{ active arms at time }t$$
 $$\text{Let }1_{i, t} = 1(i \in a_t), \; \text{Let }H_i^{(0)}(t) = \min\{s \geq 1: 1_{i, t+s} \neq 1_{i,t}, \; 1_{i,t} = 0\} \text{ Sleeping holding time}$$
 $$\text{Let }H_i^{(1)}(t) = \min\{s \geq 1: 1_{i, t+s} \neq 1_{i, t}, \; 1_{i,t} = 1\} \text{ Awake holding time}$$
