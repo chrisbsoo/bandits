@@ -1,9 +1,6 @@
-# MODULES
 
 pip install numpy
 pip install matplotlib
-
-# OTHER TOOLS
 
 code --install-extension James-Yu.latex-workshop
 sudo apt-get update && sudo apt-get install -y texlive-latex-extra
