@@ -6,29 +6,25 @@ import numpy as np
 ## PLAY: K X 1 MATRIX (TIME T)
 ## INFO: K, T, BEST ARM
 
-class gaussian_model:
+class bernoulli_model:
     def __init__(self, K, T):
         self.K = K
         self.T = T
 
-    def gen_gauss(self, mu, sigma):
-        assert len(mu) == self.K, f"Expected shape to be K got {len(mu)} instead."
-        assert len(sigma) == self.K, f"Expected shape to be K got {len(sigma)} instead."
+    def gen_bern(self, p):
+        assert len(p) == self.K, f"Expected shape to be K got {len(p)} instead."
 
-        self.mu = np.array(mu).reshape(-1, 1)
-        self.sigma = np.array(sigma).reshape(-1, 1)
+        self.p = np.array(p).reshape(-1, 1)
 
-        self.X = np.random.normal(self.mu, self.sigma, size=(self.K, self.T))
+        self.X = np.random.binomial(1, self.p, size=(self.K, self.T))
+        best_idx = np.argmax(self.p)
+        self.best = best_idx
     
     def play(self, t):
-        best = np.argmax(self.mu)
-        return best, self.X[:, t]
-
-    @classmethod
-    def from_gauss(cls, K, T, mu, sigma):
-        model = cls(K, T)
-        model.gen_gauss(mu, sigma)
-        return model
+        return self.best, self.X[:, t]
+    
+    def reset(self):
+        self.gen_bern(self.p)
 
         
 
