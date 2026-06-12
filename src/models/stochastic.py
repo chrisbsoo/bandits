@@ -8,11 +8,13 @@ import numpy as np
 
 class bernoulli_model:
     def __init__(self, K, T):
+        assert K >= 0, f"can't have negative arms."
+        assert T >= 0, f"can't have negative horizon."
         self.K = K
         self.T = T
 
     def gen_bern(self, p):
-        assert len(p) == self.K, f"Expected shape to be K got {len(p)} instead."
+        assert len(p) == self.K, f"expected shape to be K got {len(p)} instead."
 
         self.p = np.array(p).reshape(-1, 1)
 

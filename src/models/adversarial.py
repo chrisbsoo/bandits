@@ -8,6 +8,8 @@ import numpy as np
 
 class bernoulli_iid_model:
     def __init__(self, K, T):
+        assert K >= 0, f"can't have negative arms."
+        assert T >= 0, f"can't have negative horizon."
         self.K = K      # Number of Arms
         self.T = T      # Time Horizon
     
@@ -18,8 +20,8 @@ class bernoulli_iid_model:
         return best, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
     
     def gen_bern(self, rng, p):
-        if len(p) != self.K:
-            raise ValueError(f"Number of parameters {len(p)} not same as number of arms {self.K}")
+        assert isinstance(rng, np.random.Generator), f"expected rng argument to be a numpy random number generator."
+        assert len(p) == self.K, f"expected number of parameters {len(p)} same as arms {self.K}."
         
         X_shape = (self.K, self.T)        # Shape of X matrix
         self.X = np.zeros(X_shape)      # Initialise X reward matrix with zeroes
