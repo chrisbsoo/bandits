@@ -32,4 +32,11 @@ class bernoulli_iid_model:
         
         return self.X
 
+    # worst case oblivious
+    def gen_cycle(self, rng):
+        X_shape = (self.K, self.T)
+        self.X = np.zeros(X_shape)
+        for t in range(self.T):
+            self.X[t % self.K, t] = 1
+
 

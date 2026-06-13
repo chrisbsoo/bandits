@@ -7,34 +7,40 @@ SPINNER = ['/', '-', '\\', '|']
 
 def eval_adv(model, algo, n_runs=None):
     all_regrets = []
+    all_regrets_wk = []
     
     for run in range(n_runs):
         frame = SPINNER[run % len(SPINNER)]
         
         algo.reset()
         regrets = []
+        regrets_wk = []
         for t in range(model.T):
             print(f'\r{frame} Running... | Episode {run+1}/{n_runs} | Epoch {t+1}/{model.T}', end='', flush=True)
             choice = algo.step()
             best, rewards = model.play(t)
             algo.observe(rewards[choice])
-            regrets.append(rewards[best] - rewards[choice])
-        
+            regrets.append(rewards[best] - rewards[choice]) # strong regret
+            regrets_wk.append(np.max(rewards) - rewards[choice]) # weak regret
+
         all_regrets.append(np.cumsum(regrets))
+        all_regrets_wk.append(np.cumsum(regrets_wk))
     
     all_regrets = np.array(all_regrets)   # (n_runs, T)
+    all_regrets_wk = np.array(all_regrets_wk)   # (n_runs, T)
+    mean_wk = all_regrets_wk.mean(axis=0)   # (T,)
+    std_wk = all_regrets_wk.std(axis=0)     # (T,)
     mean = all_regrets.mean(axis=0)       # (T,)
     std = all_regrets.std(axis=0)         # (T,)
     
     t = np.arange(1, model.T+1)
-    bound = 2 * np.sqrt((np.e - 1) * t * model.K * np.log(model.K))
     
     plt.title(f"Time (X) vs CummReg (Y), {n_runs} iid runs, {model.T} T, {model.K} K")
-    plt.plot(t, mean, label='EXP3 Mean Regret', zorder=4)
+    plt.plot(t, mean, label='EXP3 Strong Mean Regret', zorder=4)
+    plt.plot(t, mean_wk, label='EXP3 Weak Mean Regret', zorder=4)
     plt.fill_between(t, mean - std, mean + std, alpha=0.5, label='±1 std', zorder=3)
-    plt.fill_between(t, mean - 2*std, mean + 2*std, alpha=0.5, label='±2 std', zorder=2)
-    plt.fill_between(t, mean - 3*std, mean + 3*std, alpha=0.5, label='±3 std', zorder=1)
-    plt.plot(t, bound, label='Theoretical Bound', linestyle='--', color='red', zorder=4)
+    plt.fill_between(t, mean_wk - std_wk, mean_wk + std_wk, alpha=0.5, label='±1 std', zorder=3)
+    plt.plot(t, )
     plt.xlabel('Time')
     plt.ylabel('Cumulative Regret')
     plt.legend()
