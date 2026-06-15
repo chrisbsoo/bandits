@@ -16,9 +16,8 @@ class simple_ucb1:
         self.t += 1
         term = (2 * np.log(self.t)) / self.N
         self.UCB = self.p + np.sqrt(term)
-        chosen = np.argmax(self.UCB)
-        self.i = chosen
-        return chosen
+        self.i = np.argmax(self.UCB)
+        return self.i
     
     def reset(self):
         self.N = np.zeros(self.K)

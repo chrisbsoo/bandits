@@ -23,7 +23,7 @@ class bernoulli_model:
         self.best = best_idx
     
     def play(self, t):
-        return self.best, self.X[:, t]
+        return self.X[:, t]
     
     def reset(self):
         self.gen_bern(self.p)

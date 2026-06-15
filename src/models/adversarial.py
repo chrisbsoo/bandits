@@ -14,10 +14,8 @@ class bernoulli_iid_model:
         self.T = T      # Time Horizon
     
     def play(self, t):
-        row_sum = self.X.sum(axis=1)    # K vector of summed values over T
-        best = np.argmax(row_sum)   # best arm (arg max)
 
-        return best, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
+        return self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
     
     def gen_bern(self, rng, p):
         assert isinstance(rng, np.random.Generator), f"expected rng argument to be a numpy random number generator."
@@ -30,7 +28,8 @@ class bernoulli_iid_model:
             for i in range(self.K):
                 self.X[i, t] = rng.binomial(1, p[i])
         
-        return self.X
+        row_sum = self.X.sum(axis=1)    # K vector of summed values over T
+        self.best = np.argmax(row_sum)   # best arm (arg max)
 
     # worst case oblivious
     def gen_cycle(self, rng):
@@ -38,5 +37,8 @@ class bernoulli_iid_model:
         self.X = np.zeros(X_shape)
         for t in range(self.T):
             self.X[t % self.K, t] = 1
+        
+        row_sum = self.X.sum(axis=1)    # K vector of summed values over T
+        self.best = np.argmax(row_sum)   # best arm (arg max)
 
 
