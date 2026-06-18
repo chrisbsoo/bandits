@@ -12,10 +12,13 @@ class bernoulli_iid_model:
         assert T >= 0, f"can't have negative horizon."
         self.K = K      # Number of Arms
         self.T = T      # Time Horizon
+        A_dim = (K, T)
+        self.A = np.ones(A_dim)
     
     def play(self, t):
-
-        return self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
+        arms = np.arange(self.K)
+        active = arms[self.A[:, t]==1]
+        return active, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
     
     def gen_bern(self, rng, p):
         assert isinstance(rng, np.random.Generator), f"expected rng argument to be a numpy random number generator."

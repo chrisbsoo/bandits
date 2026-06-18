@@ -1,5 +1,4 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "latex-workshop.latex.outDir": "%DIR%\\out",
     "python.defaultInterpreterPath": "venv\\Scripts\\python.exe"
 }
