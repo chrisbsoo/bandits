@@ -1,8 +1,2 @@
-
-pip install numpy
-pip install matplotlib
-
-code --install-extension James-Yu.latex-workshop
-sudo apt-get update && sudo apt-get install -y texlive-latex-extra
-sudo apt-get install -y latexmk
-sudo apt-get install -y texlive-science
+numpy
+matplotlib
