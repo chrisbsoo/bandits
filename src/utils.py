@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 
-SPINNER = ['/', '-', '\\', '|']
+SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
-def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=0):
+def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=None):
     all_regrets = np.array(all_regrets)   # (n_runs, T)
     all_regrets_wk = np.array(all_regrets_wk)   # (n_runs, T)
     mean_wk = all_regrets_wk.mean(axis=0)   # (T,)
@@ -14,11 +14,11 @@ def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=0):
     
     t = np.arange(1, model.T+1)
 
-    np = 1
-    if hm:
-        np += 1
+    nump = 1
+    if hm is not None:
+        nump += 1
 
-    fig, ax = plt.subplots(1, np)
+    fig, ax = plt.subplots(1, nump, figsize=(12, 5))
 
     i = 0
     
@@ -26,7 +26,7 @@ def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=0):
     if show == 1 or show == 2:
         ax[i].plot(t, mean, label='Strong Mean Regret', zorder=4)
         ax[i].fill_between(t, mean - std, mean + std, alpha=0.5, label='±1 std', zorder=3)
-    if show == i or show == 2:
+    if show == 0 or show == 2:
         ax[i].plot(t, mean_wk, label='Weak Mean Regret', zorder=4)
         ax[i].fill_between(t, mean_wk - std_wk, mean_wk + std_wk, alpha=0.5, label='±1 std', zorder=3)
     ax[i].set_xlabel('Time')
@@ -34,13 +34,14 @@ def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=0):
     ax[i].legend()
 
     i += 1
-    if i < np:
+    if i < nump:
         ax[i].set_title(f"Arm Availability Heatmap, {model.T} T, {model.K} K")
-        ax[i].imshow(hm, cmap="binary", origin="lower")
+        im = ax[i].imshow(hm, cmap="coolwarm", origin="lower", aspect='auto')
+        fig.colorbar(im, ax=ax[i])
         ax[i].set_xticks(np.linspace(0, model.T-1, 6, dtype=int))
-    
-    ax[i].set_xlabel('Time')
-    ax[i].set_ylabel('Arm Availability')
+        ax[i].set_yticks(range(model.K))
+        ax[i].set_xlabel('Time')
+        ax[i].set_ylabel('Arm Availability')
 
     plt.show()
     

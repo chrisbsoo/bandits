@@ -19,7 +19,6 @@ class bernoulli_model:
         assert len(p) == self.K, f"expected shape to be K got {len(p)} instead."
 
         self.p = np.array(p).reshape(-1, 1)
-
         self.X = np.random.binomial(1, self.p, size=(self.K, self.T))
         best_idx = np.argmax(self.p)
         self.best = best_idx
@@ -28,7 +27,6 @@ class bernoulli_model:
         assert len(pa) == self.K, f"expected shape to be K got {len(pa)} instead."
 
         pa = np.array(pa).reshape(-1, 1)
-
         self.A = np.random.binomial(1, pa, size=(self.K, self.T))
     
     def play(self, t):
