@@ -34,6 +34,12 @@ class bernoulli_iid_model:
         row_sum = self.X.sum(axis=1)    # K vector of summed values over T
         self.best = np.argmax(row_sum)   # best arm (arg max)
 
+    def genact_bern(self, pa):
+        assert len(pa) == self.K, f"expected shape to be K got {len(pa)} instead."
+
+        pa = np.array(pa).reshape(-1, 1)
+        self.A = np.random.binomial(1, pa, size=(self.K, self.T))
+
     # worst case oblivious
     def gen_cycle(self, rng):
         X_shape = (self.K, self.T)
