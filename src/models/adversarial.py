@@ -10,10 +10,19 @@ class bernoulli_iid_model:
     def __init__(self, K, T):
         assert K >= 0, f"can't have negative arms."
         assert T >= 0, f"can't have negative horizon."
+        
+        self.new_horizon(K, T)
+
+    def new_horizon(self, K, T):
         self.K = K      # Number of Arms
         self.T = T      # Time Horizon
-        A_dim = (K, T)
-        self.A = np.ones(A_dim)
+
+        self.A_dim = (K, T)
+        self.A = np.ones(self.A_dim)
+
+        self.X_shape = (self.K, self.T)        # Shape of X matrix
+        self.X = np.zeros(self.X_shape)      # Initialise X reward matrix with zeroes
+
     
     def play(self, t):
         arms = np.arange(self.K)
@@ -23,9 +32,6 @@ class bernoulli_iid_model:
     def gen_bern(self, rng, p):
         assert isinstance(rng, np.random.Generator), f"expected rng argument to be a numpy random number generator."
         assert len(p) == self.K, f"expected number of parameters {len(p)} same as arms {self.K}."
-        
-        X_shape = (self.K, self.T)        # Shape of X matrix
-        self.X = np.zeros(X_shape)      # Initialise X reward matrix with zeroes
         
         for t in range(self.T):
             for i in range(self.K):
@@ -49,5 +55,11 @@ class bernoulli_iid_model:
         
         row_sum = self.X.sum(axis=1)    # K vector of summed values over T
         self.best = np.argmax(row_sum)   # best arm (arg max)
+    
+    def reset(self):
+        self.A = np.ones(self.A_dim)
+        self.X = np.zeros(self.X_shape)
+
+
 
 

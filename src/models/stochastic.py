@@ -10,10 +10,14 @@ class bernoulli_model:
     def __init__(self, K, T):
         assert K >= 0, f"can't have negative arms."
         assert T >= 0, f"can't have negative horizon."
+        self.new_horizon(K, T)
+    
+    def new_horizon(self, K, T):
         self.K = K
         self.T = T
-        A_dim = (K, T)
-        self.A = np.ones(A_dim)
+        self.A_dim = (K, T)
+        self.A = np.ones(self.A_dim)
+
 
     def gen_bern(self, p):
         assert len(p) == self.K, f"expected shape to be K got {len(p)} instead."
@@ -34,8 +38,13 @@ class bernoulli_model:
         active = arms[self.A[:, t]==1]
         return active, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
     
+    def algo_reset(self):
+        self.gen_bern(self.p)
+    
     def reset(self):
         self.gen_bern(self.p)
+        self.A = np.ones(self.A_dim)
+
 
         
 

@@ -27,7 +27,7 @@ class simple_ucb1:
         self.T = 0
         self.t = 0
     
-    def eval(self, n_runs=1, ind=1):
+    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True):
         from src.utils import SPINNER
         from src.utils import plot
 
@@ -38,7 +38,7 @@ class simple_ucb1:
 
             frame = SPINNER[run % len(SPINNER)]
             self.reset()
-            self.model.reset()
+            self.model.algo_reset()
             regrets = []
             regrets_wk = []
 
@@ -67,5 +67,12 @@ class simple_ucb1:
             
             all_regrets.append(np.cumsum(regrets))
             all_regrets_wk.append(np.cumsum(regrets_wk))
+
+        params = {
+            "n_runs" : n_runs,
+            "regs" : all_regrets if reg else None,
+            "wk_regs" : all_regrets_wk if wk_reg else None,
+            "sleeping" : self.model.A.copy() if sleeping else None
+        }
         
-        plot(n_runs, self.model, all_regrets, all_regrets_wk, ind, hm=self.model.A)
+        plot(self.model, **params)

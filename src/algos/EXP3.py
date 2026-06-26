@@ -38,7 +38,7 @@ class simple_exp3:
         self.p = np.ones(self.K) / self.K
         self.i = None
     
-    def eval(self, n_runs=1, ind=1):
+    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True):
         all_regrets = []
         all_regrets_wk = []
 
@@ -76,7 +76,14 @@ class simple_exp3:
             all_regrets.append(np.cumsum(regrets))
             all_regrets_wk.append(np.cumsum(regrets_wk))
         
-        plot(n_runs, self.model, all_regrets, all_regrets_wk, ind, hm=self.model.A)
+        params = {
+            "n_runs" : n_runs,
+            "regs" : all_regrets if reg else None,
+            "wk_regs" : all_regrets_wk if wk_reg else None,
+            "sleeping" : self.model.A.copy() if sleeping else None
+        }
+        
+        plot(self.model, **params)
 
 
 

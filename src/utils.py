@@ -3,47 +3,65 @@ import matplotlib.pyplot as plt
 from IPython.display import clear_output
 
 SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+sizes = {
+    (1, 0, 0): (6, 4),
+    (0, 1, 0): (6, 4),
+    (0, 0, 1): (10, 4),
+    (1, 1, 0): (12, 4),
+    (1, 0, 1): (10, 7),
+    (0, 1, 1): (10, 7),
+    (1, 1, 1): (12, 8),
+}
 
-def plot(n_runs, model, all_regrets, all_regrets_wk, show=2, hm=None):
-    all_regrets = np.array(all_regrets)   # (n_runs, T)
-    all_regrets_wk = np.array(all_regrets_wk)   # (n_runs, T)
-    mean_wk = all_regrets_wk.mean(axis=0)   # (T,)
-    std_wk = all_regrets_wk.std(axis=0)     # (T,)
-    mean = all_regrets.mean(axis=0)       # (T,)
-    std = all_regrets.std(axis=0)         # (T,)
-    
+def plot(model, n_runs=1, regs=None, wk_regs=None, sleeping=None):
+    key = (regs is not None, wk_regs is not None, sleeping is not None)
+    fig = plt.figure(figsize=sizes[key])
+    n_top = (regs is not None) + (wk_regs is not None)
+    has_bottom = sleeping is not None
+    nrows = 1 + has_bottom  # 1 if no sleeping, 2 if sleeping
+    ncols = max(1, n_top)   # 1 if only sleeping, 2 if any top plots
+    gs = fig.add_gridspec(nrows, ncols, hspace=0.35, wspace=0.3)
     t = np.arange(1, model.T+1)
 
-    nump = 1
-    if hm is not None:
-        nump += 1
+    fig.suptitle(f"K = {model.K}, T = {model.T}, Runs = {n_runs}", fontsize=14, y=0.95)
 
-    fig, ax = plt.subplots(1, nump, figsize=(12, 5))
+    if regs is not None:
+        ax1 = fig.add_subplot(gs[0, 0])
+        regs = np.array(regs)   # (n_runs, T)
+        mean, std = regs.mean(axis=0), regs.std(axis=0)
+        plot_reg(ax1, t, mean, std, "Strong")
 
-    i = 0
+    if wk_regs is not None:
+        col = 1 if regs is not None else 0
+        ax2 = fig.add_subplot(gs[0, col])
+        wk_regs = np.array(wk_regs)   # (n_runs, T)
+        mean_wk, std_wk = wk_regs.mean(axis=0), wk_regs.std(axis=0)     # (T,)
+        plot_reg(ax2, t, mean_wk, std_wk, "Weak")
     
-    ax[i].set_title(f"Time (X) vs CummReg (Y), {n_runs} iid runs, {model.T} T, {model.K} K")
-    if show == 1 or show == 2:
-        ax[i].plot(t, mean, label='Strong Mean Regret', zorder=4)
-        ax[i].fill_between(t, mean - std, mean + std, alpha=0.5, label='±1 std', zorder=3)
-    if show == 0 or show == 2:
-        ax[i].plot(t, mean_wk, label='Weak Mean Regret', zorder=4)
-        ax[i].fill_between(t, mean_wk - std_wk, mean_wk + std_wk, alpha=0.5, label='±1 std', zorder=3)
-    ax[i].set_xlabel('Time')
-    ax[i].set_ylabel('Cumulative Regret')
-    ax[i].legend()
-
-    i += 1
-    if i < nump:
-        ax[i].set_title(f"Arm Availability Heatmap, {model.T} T, {model.K} K")
-        im = ax[i].imshow(hm, cmap="coolwarm", origin="lower", aspect='auto')
-        fig.colorbar(im, ax=ax[i])
-        ax[i].set_xticks(np.linspace(0, model.T-1, 6, dtype=int))
-        ax[i].set_yticks(range(model.K))
-        ax[i].set_xlabel('Time')
-        ax[i].set_ylabel('Arm Availability')
+    if sleeping is not None:
+        row = 1 if regs is not None else 0
+        ax3 = fig.add_subplot(gs[row, :])
+        hm = np.array(sleeping)
+        plot_arm_aval(ax3, fig, hm, model.T, model.K)
 
     plt.show()
-    
+
+def plot_reg(ax, t, mean, std, title):
+    ax.set_title(f"Cumulative {title} Regret")
+    ax.plot(t, mean, label='Mean Regret', zorder=4)
+    ax.fill_between(t, mean - std, mean + std, alpha=0.5, label='±1 std', zorder=3)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Cumulative Regret')
+    ax.grid(True, alpha=0.3)
+    ax.legend()
+
+def plot_arm_aval(ax, fig, hm, T, K):
+    ax.set_title("Arm Availability Heatmap")
+    im = ax.imshow(hm, cmap='coolwarm', origin='lower', aspect='auto')
+    fig.colorbar(im, ax=ax)
+    ax.set_xticks(np.linspace(0, T-1, 6, dtype=int))
+    ax.set_yticks(range(K))
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Arm')
 
     
