@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 # IN: K, T
 # FUNCTIONS OUT:
@@ -16,15 +17,16 @@ class bernoulli_iid_model:
     def new_horizon(self, K, T):
         self.K = K      # Number of Arms
         self.T = T      # Time Horizon
+        self.I = None   # True if it's intermediate setting
 
         self.A_dim = (K, T)
-        self.A = np.ones(self.A_dim)
-
         self.X_shape = (self.K, self.T)        # Shape of X matrix
-        self.X = np.zeros(self.X_shape)      # Initialise X reward matrix with zeroes
 
+        self.reset()
     
     def play(self, t):
+        if np.all(self.X == 0):
+            warnings.warn("Reward Matrix is trivially a zero matrix. ")
         arms = np.arange(self.K)
         active = arms[self.A[:, t]==1]
         return active, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
@@ -39,6 +41,15 @@ class bernoulli_iid_model:
         
         row_sum = self.X.sum(axis=1)    # K vector of summed values over T
         self.best = np.argmax(row_sum)   # best arm (arg max)
+    
+    def smooth_gaussian(self, sigma):
+        assert len(sigma) == self.K, f"expected variances to have shape {self.K}, got {len(sigma)} instead."
+        std = np.array(sigma)[:, None]
+        if self.I is None:
+            self.sigma = sigma
+            self.Xt = self.X.copy()
+        self.X = np.random.normal(self.Xt, std)
+        self.I = True
 
     def genact_bern(self, pa):
         assert len(pa) == self.K, f"expected shape to be K got {len(pa)} instead."
@@ -56,6 +67,11 @@ class bernoulli_iid_model:
         row_sum = self.X.sum(axis=1)    # K vector of summed values over T
         self.best = np.argmax(row_sum)   # best arm (arg max)
     
+    def algo_reset(self):
+        if self.I:
+            self.smooth_gaussian(self.sigma)
+        pass
+
     def reset(self):
         self.A = np.ones(self.A_dim)
         self.X = np.zeros(self.X_shape)
