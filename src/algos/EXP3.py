@@ -49,6 +49,7 @@ class simple_exp3:
             frame = SPINNER[run % len(SPINNER)]
             
             self.reset()
+            self.algo_reset()
             regrets = []
             regrets_wk = []
 
