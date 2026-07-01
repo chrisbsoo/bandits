@@ -23,7 +23,7 @@ def plot(model, n_runs=1, regs=None, wk_regs=None, sleeping=None):
     gs = fig.add_gridspec(nrows, ncols, hspace=0.35, wspace=0.3)
     t = np.arange(1, model.T+1)
 
-    fig.suptitle(f"K = {model.K}, T = {model.T}, Runs = {n_runs}", fontsize=14, y=0.95)
+    fig.suptitle(f"K = {model.K}, T = {model.T}, Runs = {n_runs}", fontsize=14, y=1.05 - (0.05 * nrows))
 
     if regs is not None:
         ax1 = fig.add_subplot(gs[0, 0])
