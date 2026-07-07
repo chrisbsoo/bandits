@@ -18,7 +18,6 @@ class bernoulli_model:
         self.A_dim = (K, T)
         self.A = np.ones(self.A_dim)
 
-
     def gen_bern(self, p):
         assert len(p) == self.K, f"expected shape to be K got {len(p)} instead."
 
