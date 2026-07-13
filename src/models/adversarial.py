@@ -24,12 +24,23 @@ class bernoulli_iid_model:
 
         self.reset()
     
+    def algo_reset(self):
+        if self.I:
+            self.smooth_gaussian(self.sigma)
+        pass
+
+    def reset(self):
+        self.A = np.ones(self.A_dim)
+        self.X = np.zeros(self.X_shape)
+    
     def play(self, t):
         if np.all(self.X == 0):
             warnings.warn("Reward Matrix is trivially a zero matrix. ")
         arms = np.arange(self.K)
         active = arms[self.A[:, t]==1]
         return active, self.X[:, t]     # Returns best arm and K x 1 reward vector at time t
+
+    # ---- generators ----
     
     def gen_bern(self, rng, p):
         assert isinstance(rng, np.random.Generator), f"expected rng argument to be a numpy random number generator."
@@ -66,15 +77,6 @@ class bernoulli_iid_model:
         
         row_sum = self.X.sum(axis=1)    # K vector of summed values over T
         self.best = np.argmax(row_sum)   # best arm (arg max)
-    
-    def algo_reset(self):
-        if self.I:
-            self.smooth_gaussian(self.sigma)
-        pass
-
-    def reset(self):
-        self.A = np.ones(self.A_dim)
-        self.X = np.zeros(self.X_shape)
 
 
 

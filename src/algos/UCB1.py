@@ -17,14 +17,13 @@ class simple_ucb1:
         self.t += 1
         term = (2 * np.log(self.t) + 1) / (self.N[active] + 1)
         self.UCB[active] = self.p[active] + np.sqrt(term)
-        self.i = np.argmax(self.UCB[active])
+        self.i = active[np.argmax(self.UCB[active])]
         return self.i
     
     def reset(self):
         self.N = np.zeros(self.K)
         self.p = np.zeros(self.K)
         self.i = None
-        self.T = 0
         self.t = 0
     
     def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True):
