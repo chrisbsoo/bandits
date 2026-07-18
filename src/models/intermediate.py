@@ -38,6 +38,7 @@ class intermediate_model:
         self.sigma = np.array(sigma)
 
         self.b = np.random.binomial(1, 0.5, size=self.K)
-        self.Z = self.alpha + self.beta * self.b      # (K,) fixed per run
+        self.Zr = self.alpha + self.beta * self.b      # (K,) fixed per run
+        self.Z = 3 * self.sigma + (self.Zr - self.Zr.min()) / (self.Zr.max() - self.Zr.min()) * (1 - 6 * self.sigma)
         self.best = np.argmax(self.Z)
         self.algo_reset()

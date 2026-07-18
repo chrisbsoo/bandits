@@ -26,9 +26,10 @@ class simple_ucb1:
         self.i = None
         self.t = 0
     
-    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True):
+    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True, graph=True):
         from src.utils import SPINNER
         from src.utils import plot
+        from src.utils import estimate_exponent
 
         all_regrets = []
         all_regrets_wk = []
@@ -74,4 +75,17 @@ class simple_ucb1:
             "sleeping" : self.model.A.copy() if sleeping else None
         }
         
-        plot(self.model, **params)
+        mean_regrets = np.array(all_regrets).mean(axis=0)
+        print("Final cumulative regret:", mean_regrets[-1])
+        print("Regret at T/2:", mean_regrets[len(mean_regrets)//2])
+        print("Ratio (should be ~1 for log, ~1.4 for sqrt):", mean_regrets[-1] / mean_regrets[len(mean_regrets)//2])
+
+        reg_est = estimate_exponent(all_regrets)
+        wk_reg_est = estimate_exponent(all_regrets_wk)
+        
+        if graph:
+            plot(self.model, **params)
+            print("Regret Score: ", reg_est)
+            print("Weak Regret Score: ", wk_reg_est)
+        else:
+            return reg_est, wk_reg_est

@@ -38,12 +38,13 @@ class simple_exp3:
         self.p = np.ones(self.K) / self.K
         self.i = None
     
-    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True):
+    def eval(self, n_runs=1, reg=True, wk_reg=True, sleeping=True, graph=True):
         all_regrets = []
         all_regrets_wk = []
 
         from src.utils import SPINNER
         from src.utils import plot
+        from src.utils import estimate_exponent
         
         for run in range(n_runs):
             frame = SPINNER[run % len(SPINNER)]
@@ -83,8 +84,16 @@ class simple_exp3:
             "wk_regs" : all_regrets_wk if wk_reg else None,
             "sleeping" : self.model.A.copy() if sleeping else None
         }
+
+        reg_est = estimate_exponent(all_regrets)
+        wk_reg_est = estimate_exponent(all_regrets_wk)
         
-        plot(self.model, **params)
+        if graph:
+            plot(self.model, **params)
+            print("Regret Score: ", reg_est)
+            print("Weak Regret Score: ", wk_reg_est)
+        else:
+            return reg_est, wk_reg_est
 
 
 

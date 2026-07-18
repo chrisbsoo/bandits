@@ -64,4 +64,18 @@ def plot_arm_aval(ax, fig, hm, T, K):
     ax.set_xlabel('Time')
     ax.set_ylabel('Arm')
 
+def estimate_exponent(cum_regrets):
+    mean = np.array(cum_regrets).mean(axis=0)
+    
+    T = len(mean)
+    t = np.arange(1, T+1)
+    
+    burnin = max(T // 10, 10)
+    
+    log_t = np.log(t[burnin:])
+    log_r = np.log(mean[burnin:] + 1e-10)   # epsilon avoids log(0)
+    
+    x = np.polyfit(log_t, log_r, 1)[0]      # slope of log-log line
+    
+    return x
     
