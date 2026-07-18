@@ -22,11 +22,8 @@ class intermediate_model:
     
     def algo_reset(self):
         # resample b_i each Monte Carlo run
-        self.b = np.random.binomial(1, 0.5, size=self.K)
-        self.Z = self.alpha + self.beta * self.b      # (K,) fixed per run
         Y_mean = self.Z[:, None] * np.ones((self.K, self.T))
         self.X = np.clip(np.random.normal(Y_mean, self.sigma[:, None]), 0, 1)
-        self.best = np.argmax(self.Z)
     
     def play(self, t):
         arms = np.arange(self.K)
@@ -39,4 +36,8 @@ class intermediate_model:
         self.alpha = np.array(alpha)
         self.beta = np.array(beta)
         self.sigma = np.array(sigma)
+
+        self.b = np.random.binomial(1, 0.5, size=self.K)
+        self.Z = self.alpha + self.beta * self.b      # (K,) fixed per run
+        self.best = np.argmax(self.Z)
         self.algo_reset()
