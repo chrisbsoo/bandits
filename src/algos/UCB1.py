@@ -76,9 +76,6 @@ class simple_ucb1:
         }
         
         mean_regrets = np.array(all_regrets).mean(axis=0)
-        print("Final cumulative regret:", mean_regrets[-1])
-        print("Regret at T/2:", mean_regrets[len(mean_regrets)//2])
-        print("Ratio (should be ~1 for log, ~1.4 for sqrt):", mean_regrets[-1] / mean_regrets[len(mean_regrets)//2])
 
         reg_est = estimate_exponent(all_regrets)
         wk_reg_est = estimate_exponent(all_regrets_wk)
