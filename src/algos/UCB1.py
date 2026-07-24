@@ -15,7 +15,7 @@ class simple_ucb1:
 
     def step(self, active):
         self.t += 1
-        term = (2 * np.log(self.t) + 1) / (self.N[active] + 1)
+        term = 2 * np.log(self.t) / self.N[active]
         self.UCB[active] = self.p[active] + np.sqrt(term)
         self.i = active[np.argmax(self.UCB[active])]
         return self.i

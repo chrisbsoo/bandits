@@ -40,11 +40,26 @@ class bernoulli_model:
         best_idx = np.argmax(self.p)
         self.best = best_idx
     
-    def genact_bern(self, pa):
-        assert len(pa) == self.K, f"expected shape to be K got {len(pa)} instead."
-
-        pa = np.array(pa).reshape(-1, 1)
-        self.A = np.random.binomial(1, pa, size=(self.K, self.T))
+    def genact_bern(self, pa, min_awake=1, min_sleep=1):
+        assert len(pa) == self.K
+        pa = np.array(pa)
+        self.A = np.zeros((self.K, self.T))
+        
+        for i in range(self.K):
+            state = np.random.binomial(1, pa[i])  # initial state
+            count = 0  # how long in current state
+            
+            for t in range(self.T):
+                self.A[i, t] = state
+                count += 1
+                
+                min_hold = min_awake if state == 1 else min_sleep
+                
+                if count >= min_hold:
+                    # eligible to switch
+                    if np.random.binomial(1, pa[i] if state == 0 else 1-pa[i]):
+                        state = 1 - state  # flip
+                        count = 0
 
 
         
