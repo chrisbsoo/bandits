@@ -4,37 +4,45 @@ import numba as nb
 # [1, 0] K times
 
 @nb.njit
-def make_A_optim(X, ps, pers, K, T):
+def make_A_optim(X, ps, pers, K, T, avoid_all_asleep=False):
     timer = np.zeros(K, dtype=np.int64)
     mask = np.zeros((K, T), dtype=np.int64)
+    awakes = np.empty(K, dtype=np.int64)
+    for i in range(K):
+        awakes[i] = 1 if np.random.random() < ps[i] else 0
 
-    # properly random init at t=0, respecting ps
-    while True:
-        awakes = np.empty(K, dtype=np.int64)
-        for i in range(K):
-            awakes[i] = 1 if np.random.random() < ps[i] else 0
-        if awakes.any():
-            break
+    if avoid_all_asleep:
+        while not awakes.any():
+            for i in range(K):
+                awakes[i] = 1 if np.random.random() < ps[i] else 0
+
     mask[:, 0] = awakes
     for i in range(K):
         timer[i] = pers - 1 if awakes[i] == 1 else 0
 
     for t in range(1, T):
-        prev = mask[:, t-1].copy()
+        prev = mask[:, t - 1].copy()
         curr = prev.copy()
+
         forced = (prev == 1) & (timer > 0)
         timer[forced] -= 1
         redraw = ~forced
-        if redraw.any():
-            while True:
-                awakes = np.empty(K, dtype=np.int64)
+        new_draw = np.empty(K, dtype=np.int64)
+        for i in range(K):
+            new_draw[i] = 1 if np.random.random() < ps[i] else 0
+        curr[redraw] = new_draw[redraw]
+
+        if avoid_all_asleep and not curr.any():
+            while not curr.any():
                 for i in range(K):
-                    awakes[i] = 1 if np.random.random() < ps[i] else 0
-                if forced.any() or awakes[redraw].any():   # only need global non-emptiness
-                    break
-            curr[redraw] = awakes[redraw]
-            newly_awake = redraw & (prev == 0) & (curr == 1)
-            timer[newly_awake] = pers - 1        # <-- fixed off-by-one
+                    new_draw[i] = 1 if np.random.random() < ps[i] else 0
+                curr[:] = prev
+                curr[redraw] = new_draw[redraw]
+                curr[forced] = 1  # forced arms are never allowed to go to 0
+
+        newly_awake = redraw & (prev == 0) & (curr == 1)
+        timer[newly_awake] = pers - 1
+
         mask[:, t] = curr
 
     X = X.astype(np.float64)
@@ -43,6 +51,7 @@ def make_A_optim(X, ps, pers, K, T):
             if mask[i, j] == 0:
                 X[i, j] = np.nan
     return X
+
 
 class model:
     def __init__(self, K, T):
@@ -60,15 +69,13 @@ class model:
 
         self.best = np.max(psx)
 
-
-    def make_A(self):
+    def make_A(self, avoid_all_asleep=False):
         ps = np.asarray(self.ps, dtype=np.float64)
         self.X = make_A_optim(
             self.X,
             ps,
             self.pers,
             self.K,
-            self.T
+            self.T,
+            avoid_all_asleep,
         )
-        
-
