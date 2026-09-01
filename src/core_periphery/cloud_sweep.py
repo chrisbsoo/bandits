@@ -70,10 +70,10 @@ def sweep_cell(mu1_star, mu2_star, v, p, T, n_mc, sigma, policy_specs, base_seed
 
 @app.local_entrypoint()
 def main(n_seeds: int = 100, seed_start: int = 0, output: str = "modal_multiseed_results.npz"):
-    from core_periphery_bandit import POLICY_GREEDY, POLICY_ETC, POLICY_UCB1, POLICY_THOMPSON
+    from core_periphery_bandit import POLICY_GREEDY, POLICY_ETC, POLICY_UCB1, POLICY_THOMPSON, POLICY_RECENCY_UCB
 
     # ---- scenario (edit as needed) ----
-    mu1_star, mu2_star, sigma = 0.6, 0.75, 0.2
+    mu1_star, mu2_star, sigma = 0.75, 0.6, 0.2
     T, n_mc = 5000, 2000
 
     V_GRID = np.geomspace(0.0002, 0.05, 16)
@@ -94,6 +94,7 @@ def main(n_seeds: int = 100, seed_start: int = 0, output: str = "modal_multiseed
         ("ETC(c=3)",     POLICY_ETC, dict(explore_m=int(round(3.0 * T_23)))),
         ("UCB1",         POLICY_UCB1, {}),
         ("Thompson",     POLICY_THOMPSON, {}),
+        ("RecencyUCB",   POLICY_RECENCY_UCB, dict(window=100, min_floor=20))
     ]
 
     # ONE flat list covering every (seed, v, p) combination -- dispatched in

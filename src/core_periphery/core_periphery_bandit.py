@@ -66,7 +66,8 @@ def compute_oracle_table(mu1_star, mu2_star, v, p, T):
 # ----------------------------------------------------------------------
 @njit(cache=True, fastmath=True)
 def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
-                  oracle_action_table, ucb_c=1.0, explore_m=0):
+                  oracle_action_table, ucb_c=1.0, explore_m=0,
+                  window=100, min_floor=20):
     np.random.seed(seed)
 
     # ---- evaluated policy state ----
@@ -74,6 +75,13 @@ def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
     n2 = 0
     sum1 = 0.0
     sum2 = 0.0
+
+    # ---- ring buffer for RecencyUCB (policy_id 4): tracks only the most
+    # recent `window` periphery rewards, since the periphery's true mean is
+    # rising -- a full-history average is systematically dragged down by
+    # its own early, low-value pulls.
+    peri_buf = np.zeros(window, dtype=np.float64)
+    peri_buf_sum = 0.0
 
     # ---- oracle state (independent trajectory, same availability draws) ----
     n2_star = 0
@@ -137,6 +145,28 @@ def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
                 else:
                     choice = 2
 
+        elif policy_id == 4:  # RecencyUCB (proposed): min-sample floor (robustness,
+            # per the tail-risk finding) + recency-weighted mean for the periphery
+            # (tracks its rising true mean instead of being dragged down by early
+            # low pulls) + standard UCB exploration bonus on top of both.
+            if core_avail and n1 < min_floor:
+                choice = 1
+            elif n2 < min_floor:
+                choice = 2
+            elif core_avail:
+                m1 = sum1 / n1
+                recent_n = n2 if n2 < window else window
+                m2_recent = peri_buf_sum / recent_n   # windowed MEAN: tracks rising true value
+                ucb1 = m1 + ucb_c * np.sqrt(2.0 * np.log(t + 2.0) / n1)
+                # bonus uses the TRUE n2, not the windowed count -- so
+                # exploration genuinely tapers off as real evidence
+                # accumulates, instead of being perpetually capped at
+                # "only 100 samples' worth" of confidence forever
+                ucb2 = m2_recent + ucb_c * np.sqrt(2.0 * np.log(t + 2.0) / n2)
+                choice = 1 if ucb1 >= ucb2 else 2
+            else:
+                choice = 2
+
         else:  # policy_id == 3, Thompson Sampling, Gaussian known-variance conjugate
             if core_avail:
                 if n1 > 0:
@@ -153,7 +183,6 @@ def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
                 choice = 1 if s1 >= s2 else 2
             else:
                 choice = 2
-
         # ---------------- pull & reward ----------------
         if choice == 1:
             r = np.random.normal(mu1_star, sigma)
@@ -163,6 +192,11 @@ def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
         else:
             r = np.random.normal(m2_now, sigma)
             sum2 += r
+            # ring buffer update: overwrite the slot that's `window` pulls old,
+            # subtract what it held, add the new reward -- O(1) per step
+            slot = n2 % window
+            peri_buf_sum += r - peri_buf[slot]
+            peri_buf[slot] = r
             n2 += 1
             true_mean = m2_now
 
@@ -180,7 +214,7 @@ def simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma, seed,
 @njit(cache=True, parallel=True)
 def monte_carlo(policy_id, n_mc, T, mu1_star, mu2_star, v, p, sigma,
                  base_seed, oracle_action_table, ucb_c=1.0, explore_m=0,
-                 n_sample=150):
+                 n_sample=150, window=100, min_floor=20):
     n_sample = min(n_sample, n_mc)
     sum_regret = np.zeros(T, dtype=np.float64)
     sumsq_regret = np.zeros(T, dtype=np.float64)
@@ -191,7 +225,8 @@ def monte_carlo(policy_id, n_mc, T, mu1_star, mu2_star, v, p, sigma,
     for i in prange(n_mc):
         seed_i = base_seed + i * 7919 + 1
         cr, ch = simulate_run(policy_id, T, mu1_star, mu2_star, v, p, sigma,
-                               seed_i, oracle_action_table, ucb_c, explore_m)
+                               seed_i, oracle_action_table, ucb_c, explore_m,
+                               window, min_floor)
         sum_regret += cr
         sumsq_regret += cr * cr
         for t in range(T):
@@ -287,3 +322,4 @@ POLICY_GREEDY = 0
 POLICY_ETC = 1        # pass explore_m explicitly
 POLICY_UCB1 = 2
 POLICY_THOMPSON = 3
+POLICY_RECENCY_UCB = 4  # proposed: pass window, min_floor explicitly
