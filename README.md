@@ -2,6 +2,8 @@
 
 A two-armed bandit model of vacancy allocation in online labour markets: an exogenously unavailable, stable arm (**core**, experienced workers) against an always-available arm whose value rises with use (**periphery**, novice workers). Built to study when exploration algorithms correctly discover that a currently-worse option is actually the better long-run choice, and to design one that does this reliably.
 
+See results + notebook here: https://github.com/chrisbsoo/core-periphery/blob/main/src/core_periphery/sig_analysis.ipynb
+
 ## Motivation
 
 Online labour platforms must repeatedly decide whether a new vacancy goes to a small, experienced worker pool or a large, novice one. The core is stable but frequently unavailable; the periphery is always available, but its true productivity is only revealed, and only improves, as workers are actually given the chance to work. Pallais (2014, *AER*) documents exactly this failure empirically in a field experiment on oDesk/Upwork: novice workers were systematically under-hired relative to their true, initially-unrevealed ability. This project formalizes the algorithmic version of that problem.
