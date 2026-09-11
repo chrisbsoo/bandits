@@ -201,4 +201,4 @@ def run_all_cases(algo_name, a_grid, b_grid, sigma=0.15, n_mc=100,
 if __name__ == "__main__":
     a_grid = np.linspace(0.1, 1.0, 5)
     b_grid = np.linspace(0.1, 1.0, 5)
-    run_all_cases("RAWUCB", a_grid, b_grid)
+    run_all_cases("ERAWUCB", a_grid, b_grid)
